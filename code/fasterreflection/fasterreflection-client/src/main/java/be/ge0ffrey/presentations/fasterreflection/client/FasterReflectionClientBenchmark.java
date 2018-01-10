@@ -16,12 +16,14 @@
 
 package be.ge0ffrey.presentations.fasterreflection.client;
 
+import java.lang.invoke.MethodHandle;
 import java.util.concurrent.TimeUnit;
 
 import be.ge0ffrey.presentations.fasterreflection.client.model.Person;
 import be.ge0ffrey.presentations.fasterreflection.framework.BeanPropertyReader;
 import be.ge0ffrey.presentations.fasterreflection.framework.JavaCompilerBeanPropertyReaderFactory;
 import be.ge0ffrey.presentations.fasterreflection.framework.MethodHandleBeanPropertyReader;
+import be.ge0ffrey.presentations.fasterreflection.framework.MethodHandleLookup;
 import be.ge0ffrey.presentations.fasterreflection.framework.ReflectionBeanPropertyReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -48,7 +50,9 @@ public class FasterReflectionClientBenchmark {
 
     private final BeanPropertyReader methodHandleBeanPropertyReader = new MethodHandleBeanPropertyReader(Person.class, "name");
     private static final BeanPropertyReader staticMethodHandleBeanPropertyReader = new MethodHandleBeanPropertyReader(Person.class, "name");
-//    private final BeanPropertyReader methodHandleFieldReader = new MethodHandleFieldReader(Person.class, "name");
+    //    private final BeanPropertyReader methodHandleFieldReader = new MethodHandleFieldReader(Person.class, "name");
+
+    private static final MethodHandle methodHandleStaticFinalBeanPropertyReader = MethodHandleLookup.initialiseMH(Person.class, "name");
 
     private final BeanPropertyReader javaCompilerBeanPropertyReader = JavaCompilerBeanPropertyReaderFactory.generate(Person.class, "name");
 
@@ -88,4 +92,8 @@ public class FasterReflectionClientBenchmark {
         return (String) javaCompilerBeanPropertyReader.executeGetter(person);
     }
 
+    @Benchmark
+    public String _400_staticFinalMethodHandle() throws Throwable {
+        return (String) methodHandleStaticFinalBeanPropertyReader.invokeExact(person);
+    }
 }
